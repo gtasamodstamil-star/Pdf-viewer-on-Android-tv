@@ -28,39 +28,15 @@
   .app{height:100vh; display:flex; flex-direction:column; animation:fadeIn 0.7s ease;}
   header{
     display:flex;
-    flex-wrap:wrap;
     align-items:center;
-    gap:10px;
-    padding:10px 14px;
+    justify-content:center;
+    padding:14px;
     background:linear-gradient(90deg,var(--accent),var(--accent3),var(--accent2));
     background-size:300% 300%;
     animation:gradientMove 6s ease infinite;
     box-shadow:0 0 12px rgba(0,0,0,0.4);
   }
-
-  h1{font-size:18px; margin:0; letter-spacing:0.4px; flex:1;}
-  .controls{
-    display:flex; 
-    flex-wrap:wrap; 
-    gap:8px; 
-    align-items:center;
-    justify-content:center;
-    width:100%;
-  }
-
-  button, input[type="file"], input[type="text"]{
-    background:var(--panel);
-    border:1px solid rgba(255,255,255,0.08);
-    color:var(--text);
-    padding:9px 12px;
-    border-radius:10px;
-    font-size:15px;
-    transition:all 0.3s ease;
-  }
-  button:hover, input[type="file"]:hover, input[type="text"]:hover{
-    box-shadow:0 0 8px var(--accent);
-    transform:scale(1.03);
-  }
+  h1{font-size:18px; margin:0; letter-spacing:0.4px; text-align:center;}
 
   main {
     flex:1;
@@ -84,7 +60,6 @@
     cursor:grab;
     touch-action:pan-y pan-x;
   }
-
   #canvasContainer:active { cursor:grabbing; }
 
   canvas {
@@ -152,36 +127,25 @@
     to{text-shadow:0 0 15px var(--accent3),0 0 25px var(--accent2);}
   }
 
-  .urlInput{width:60vw; min-width:180px;}
-
-  /* 🔹 MOBILE RESPONSIVE FIX */
   @media (max-width:768px){
-    h1{font-size:16px; text-align:center; width:100%;}
-    .controls{flex-direction:column; align-items:stretch;}
-    .urlInput{width:90vw;}
+    h1{font-size:16px;}
     .btn-big{font-size:14px; min-width:70px; padding:8px 12px;}
     .bottom{gap:8px; padding:10px;}
     #canvasContainer{padding:10px;}
   }
-
 </style>
 </head>
 <body>
 <div class="app">
   <header>
     <h1>📄 PDF Viewer — by Jai321k</h1>
-    <div class="controls">
-      <input id="fileInput" type="file" accept="application/pdf" />
-      <input id="urlInput" class="urlInput" type="text" placeholder="Paste PDF URL..." />
-      <button id="loadUrlBtn">🚀 Load</button>
-    </div>
   </header>
 
   <main>
     <div id="canvasContainer" tabindex="0">
       <canvas id="pdfCanvas"></canvas>
     </div>
-    <div class="info" id="status">No document loaded — choose a file or paste a URL.</div>
+    <div class="info" id="status">Loading PDF...</div>
     <div class="credit">✨ Created by <b>jai321k</b></div>
   </main>
 
@@ -203,9 +167,6 @@
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 
-const fileInput=document.getElementById('fileInput');
-const urlInput=document.getElementById('urlInput');
-const loadUrlBtn=document.getElementById('loadUrlBtn');
 const canvas=document.getElementById('pdfCanvas');
 const ctx=canvas.getContext('2d');
 const status=document.getElementById('status');
@@ -214,16 +175,9 @@ const container=document.getElementById('canvasContainer');
 
 let pdfDoc=null,currentPage=1,scale=1.2,rotation=0;
 
-fileInput.addEventListener('change',e=>{
-  const f=e.target.files[0];
-  if(!f)return;
-  loadPDF(URL.createObjectURL(f));
-});
-loadUrlBtn.addEventListener('click',()=>{
-  const url=urlInput.value.trim();
-  if(!url){alert('Please paste PDF URL');return;}
-  loadPDF(url);
-});
+// 🧾 Auto-load PDF from your GitHub link
+const PDF_URL = "https://raw.githubusercontent.com/gtasamodstamil-star/Pdf-viewer-on-Android-tv/main/CS3311-Data-Structures-Lab-R2021%201.pdf"; // replace this with your GitHub raw file link
+loadPDF(PDF_URL);
 
 async function loadPDF(src){
   try{
@@ -266,29 +220,6 @@ document.getElementById('fullscreenBtn').onclick=()=>{
   const el=document.documentElement;
   if(!document.fullscreenElement){el.requestFullscreen?.();}else{document.exitFullscreen?.();}
 };
-
-/* Drag scroll + Touch scroll */
-let isDown=false,startX,startY,scrollLeft,scrollTop;
-container.addEventListener('mousedown',e=>{
-  isDown=true;startX=e.pageX-container.offsetLeft;startY=e.pageY-container.offsetTop;
-  scrollLeft=container.scrollLeft;scrollTop=container.scrollTop;
-});
-container.addEventListener('mouseleave',()=>isDown=false);
-container.addEventListener('mouseup',()=>isDown=false);
-container.addEventListener('mousemove',e=>{
-  if(!isDown)return;
-  e.preventDefault();
-  const x=e.pageX-container.offsetLeft;
-  const y=e.pageY-container.offsetTop;
-  container.scrollLeft=scrollLeft-(x-startX);
-  container.scrollTop=scrollTop-(y-startY);
-});
-
-document.addEventListener('keydown',e=>{
-  if(!pdfDoc)return;
-  if(e.key==='ArrowLeft'||e.key==='PageUp'){if(currentPage>1){currentPage--;renderPage(currentPage);}}
-  else if(e.key==='ArrowRight'||e.key==='PageDown'){if(currentPage<pdfDoc.numPages){currentPage++;renderPage(currentPage);}}
-});
 </script>
 </body>
 </html>
