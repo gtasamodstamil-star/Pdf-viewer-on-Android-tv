@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover" />
+<title>TV PDF Viewer — Jai321k</title>
+
+<!-- Created by jai321k -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+
+<style>
+  :root{
+    --bg:#060b14;
+    --panel:#0f172a;
+    --accent:#3b82f6;
+    --accent2:#10b981;
+    --accent3:#9333ea;
+    --text:#f9fafb;
+    --muted:#9ca3af;
+  }
+  html,body{
+    height:100%;
+    margin:0;
+    background:radial-gradient(circle at top, #0a0f20, #06080f 80%);
+    color:var(--text);
+    font-family:'Poppins', system-ui, sans-serif;
+    overflow:hidden;
+  }
+  .app{height:100vh; display:flex; flex-direction:column; animation:fadeIn 0.7s ease;}
+  header{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:14px 16px;
+    background:linear-gradient(90deg,var(--accent),var(--accent3),var(--accent2));
+    background-size:300% 300%;
+    animation:gradientMove 6s ease infinite;
+    box-shadow:0 0 12px rgba(0,0,0,0.4);
+  }
+  h1{font-size:20px; margin:0; letter-spacing:0.4px; text-shadow:0 2px 6px rgba(0,0,0,0.4);}
+  .controls{display:flex; gap:8px; align-items:center; margin-left:auto;}
+  button, input[type="file"], input[type="text"]{
+    background:var(--panel);
+    border:1px solid rgba(255,255,255,0.08);
+    color:var(--text);
+    padding:10px 14px;
+    border-radius:12px;
+    font-size:15px;
+    transition:all 0.3s ease;
+  }
+  button:hover, input[type="file"]:hover, input[type="text"]:hover{
+    box-shadow:0 0 8px var(--accent);
+    transform:scale(1.03);
+  }
+  button:focus, input:focus{outline:2px solid var(--accent); box-shadow:0 0 10px var(--accent2);}
+  
+  /* ====== FIXED MAIN VIEW ====== */
+  main {
+    flex: 1;
+    background: rgba(0,0,0,0.8);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  #canvasContainer {
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 20px;
+    animation: fadeIn 1.2s ease;
+    scroll-behavior: smooth;
+    cursor: grab;
+  }
+
+  #canvasContainer:active { cursor: grabbing; }
+
+  canvas {
+    max-width: none;
+    height: auto;
+    border-radius: 10px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.7);
+    transition: transform 0.35s ease, opacity 0.35s ease;
+    opacity: 1;
+  }
+
+  /* bottom panel */
+  .bottom{
+    display:flex;
+    gap:12px;
+    padding:12px;
+    align-items:center;
+    justify-content:center;
+    background:linear-gradient(180deg, rgba(0,0,0,0.5), rgba(0,0,0,0.9));
+    box-shadow:0 -2px 12px rgba(0,0,0,0.5);
+  }
+  .btn-big{
+    padding:14px 22px;
+    font-size:18px;
+    border-radius:14px;
+    min-width:110px;
+    background:linear-gradient(135deg, var(--accent2), var(--accent3));
+    border:none;
+    cursor:pointer;
+    transition:all 0.25s ease;
+    color:#fff;
+    font-weight:600;
+    letter-spacing:0.5px;
+  }
+  .btn-big:hover{
+    transform:scale(1.08);
+    box-shadow:0 0 15px var(--accent3);
+  }
+
+  .info{
+    position:absolute;
+    left:16px;
+    bottom:16px;
+    color:var(--muted);
+    font-size:14px;
+    opacity:0.8;
+  }
+
+  .credit{
+    position:absolute;
+    right:16px;
+    bottom:16px;
+    font-size:14px;
+    font-weight:600;
+    color:var(--accent);
+    text-shadow:0 0 8px var(--accent2), 0 0 15px var(--accent3);
+    animation:glow 2s ease-in-out infinite alternate;
+  }
+
+  /* animations */
+  @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+  @keyframes fadeInUp{from{opacity:0;transform:translateY(15px);}to{opacity:1;transform:translateY(0);}}
+  @keyframes gradientMove{
+    0%{background-position:0% 50%;}
+    50%{background-position:100% 50%;}
+    100%{background-position:0% 50%;}
+  }
+  @keyframes glow{
+    from{text-shadow:0 0 8px var(--accent2),0 0 15px var(--accent3);}
+    to{text-shadow:0 0 15px var(--accent3),0 0 25px var(--accent2);}
+  }
+
+  :focus { outline: 3px solid rgba(59,130,246,0.4); transform:translateY(-2px); transition:transform 0.08s; }
+  .urlInput{width:46vw; min-width:200px;}
+  @media(min-width:900px){
+    h1{font-size:22px;}
+    .urlInput{width:60vw;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>📄 PDF Viewer for Android TV — Mob Web</h1>
+
+    <div class="controls" role="toolbar" aria-label="PDF Controls">
+      <label style="display:flex; gap:8px; align-items:center;">
+        <input id="fileInput" type="file" accept="application/pdf" />
+      </label>
+
+      <input id="urlInput" class="urlInput" type="text" placeholder="Paste PDF URL and press Load..." />
+      <button id="loadUrlBtn">🚀 Load</button>
+    </div>
+  </header>
+
+  <main>
+    <div id="canvasContainer" tabindex="0">
+      <canvas id="pdfCanvas"></canvas>
+    </div>
+
+    <div class="info" id="status">No document loaded — choose a file or paste a URL.</div>
+    <div class="credit">✨ Created by <b>jai321k</b></div>
+  </main>
+
+  <div class="bottom">
+    <button class="btn-big" id="prevBtn">◀ Prev</button>
+    <div style="display:flex;flex-direction:column;align-items:center;">
+      <div style="font-size:18px;font-weight:600;" id="pageInfo">0 / 0</div>
+      <div style="font-size:13px;color:var(--muted)">Use remote or arrow keys</div>
+    </div>
+    <button class="btn-big" id="nextBtn">Next ▶</button>
+    <button class="btn-big" id="zoomOut">➖</button>
+    <button class="btn-big" id="zoomIn">➕</button>
+    <button class="btn-big" id="fitBtn">📏 Fit</button>
+    <button class="btn-big" id="rotateBtn">⤾ Rotate</button>
+    <button class="btn-big" id="fullscreenBtn">⤢ Fullscreen</button>
+  </div>
+</div>
+
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+
+const fileInput = document.getElementById('fileInput');
+const urlInput = document.getElementById('urlInput');
+const loadUrlBtn = document.getElementById('loadUrlBtn');
+const canvas = document.getElementById('pdfCanvas');
+const ctx = canvas.getContext('2d');
+const status = document.getElementById('status');
+const pageInfo = document.getElementById('pageInfo');
+const container = document.getElementById('canvasContainer');
+
+let pdfDoc = null, currentPage = 1, scale = 1.2, rotation = 0;
+
+/* Load file */
+fileInput.addEventListener('change', (e) => {
+  const f = e.target.files[0];
+  if(!f) return;
+  const fileURL = URL.createObjectURL(f);
+  loadPDF(fileURL);
+});
+
+/* Load URL */
+loadUrlBtn.addEventListener('click', () => {
+  const url = urlInput.value.trim();
+  if(!url){ alert('Please paste PDF URL.'); return; }
+  loadPDF(url);
+});
+
+async function loadPDF(src){
+  try{
+    status.textContent = '📄 Loading PDF...';
+    pdfDoc = await pdfjsLib.getDocument({url:src}).promise;
+    currentPage = 1;
+    scale = 1.2;
+    rotation = 0;
+    renderPage(currentPage);
+  }catch(err){
+    console.error(err);
+    status.textContent = '❌ Error loading PDF.';
+  }
+}
+
+/* Render with fade + zoom */
+async function renderPage(num){
+  status.textContent = `Rendering page ${num}...`;
+  canvas.style.opacity = 0; // fade out old page
+  const page = await pdfDoc.getPage(num);
+  const viewport = page.getViewport({scale, rotation});
+  canvas.height = viewport.height;
+  canvas.width = viewport.width;
+  await page.render({canvasContext:ctx, viewport}).promise;
+  pageInfo.textContent = `${currentPage} / ${pdfDoc.numPages}`;
+  status.textContent = `✅ Page ${currentPage} of ${pdfDoc.numPages}`;
+  setTimeout(()=>canvas.style.opacity = 1, 100); // fade in new page
+}
+
+/* Buttons */
+document.getElementById('prevBtn').onclick = () => { if(pdfDoc && currentPage>1){currentPage--; renderPage(currentPage);} };
+document.getElementById('nextBtn').onclick = () => { if(pdfDoc && currentPage<pdfDoc.numPages){currentPage++; renderPage(currentPage);} };
+document.getElementById('zoomIn').onclick = () => { if(pdfDoc){scale+=0.2; canvas.style.transform='scale(1.02)'; setTimeout(()=>{canvas.style.transform='scale(1)';},200); renderPage(currentPage);} };
+document.getElementById('zoomOut').onclick = () => { if(pdfDoc){scale=Math.max(0.4,scale-0.2); canvas.style.transform='scale(0.98)'; setTimeout(()=>{canvas.style.transform='scale(1)';},200); renderPage(currentPage);} };
+document.getElementById('fitBtn').onclick = () => {
+  if(!pdfDoc) return;
+  const w = container.clientWidth - 20;
+  pdfDoc.getPage(currentPage).then(p => {
+    const vp = p.getViewport({scale:1});
+    scale = Math.max(0.5,(w/vp.width));
+    renderPage(currentPage);
+  });
+};
+document.getElementById('rotateBtn').onclick = () => { if(pdfDoc){rotation=(rotation+90)%360; renderPage(currentPage);} };
+
+/* Fullscreen */
+document.getElementById('fullscreenBtn').onclick = () => {
+  const el=document.documentElement;
+  if(!document.fullscreenElement){el.requestFullscreen?.();}else{document.exitFullscreen?.();}
+};
+
+/* Drag scroll */
+let isDown=false,startX,startY,scrollLeft,scrollTop;
+container.addEventListener('mousedown', e=>{
+  isDown=true;
+  startX=e.pageX-container.offsetLeft;
+  startY=e.pageY-container.offsetTop;
+  scrollLeft=container.scrollLeft;
+  scrollTop=container.scrollTop;
+});
+container.addEventListener('mouseleave',()=>isDown=false);
+container.addEventListener('mouseup',()=>isDown=false);
+container.addEventListener('mousemove',e=>{
+  if(!isDown)return;
+  e.preventDefault();
+  const x=e.pageX-container.offsetLeft;
+  const y=e.pageY-container.offsetTop;
+  container.scrollLeft=scrollLeft-(x-startX);
+  container.scrollTop=scrollTop-(y-startY);
+});
+
+/* Keyboard controls */
+document.addEventListener('keydown', e=>{
+  if(!pdfDoc) return;
+  if(e.key==='ArrowLeft'||e.key==='PageUp'){if(currentPage>1){currentPage--;renderPage(currentPage);}}
+  else if(e.key==='ArrowRight'||e.key==='PageDown'){if(currentPage<pdfDoc.numPages){currentPage++;renderPage(currentPage);}}
+  else if(e.key==='+'||e.key==='='){scale+=0.2;renderPage(currentPage);}
+  else if(e.key==='-'){scale=Math.max(0.4,scale-0.2);renderPage(currentPage);}
+  else if(e.key==='f'||e.key==='F'){document.getElementById('fullscreenBtn').click();}
+});
+</script>
+</body>
+</html>
